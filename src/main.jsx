@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const STORAGE_KEY = 'musicedu-ai-state-ru-v7';
+const STORAGE_KEY = 'musicedu-ai-state-ru-v8';
 
 const criteria = [
   { key: 'contextNeed', label: 'Контекст и потребность', weight: 20 },
@@ -288,6 +288,14 @@ function statusClass(status) {
   return 'pending';
 }
 
+function initialState() {
+  return {
+    challenges: demoChallenges,
+    proposals: demoProposals,
+    teams: demoTeams,
+  };
+}
+
 function inferTheme(title, description) {
   const text = `${title} ${description}`.toLowerCase();
   if (text.includes('ритм')) return 'Ритм';
@@ -305,11 +313,7 @@ function loadState() {
     return null;
   }
 
-  return {
-    challenges: demoChallenges,
-    proposals: demoProposals,
-    teams: demoTeams,
-  };
+  return initialState();
 }
 
 function isValidTaskCard(card) {
@@ -426,6 +430,8 @@ function App() {
   const [levelFilter, setLevelFilter] = useState('Все уровни');
   const [publishConfirmed, setPublishConfirmed] = useState(false);
   const [message, setMessage] = useState('');
+  const [scoreChange, setScoreChange] = useState(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const publishedChallenges = useMemo(
     () =>
@@ -460,8 +466,36 @@ function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
   }
 
+  function restoreDemoState(nextScreen = 'home') {
+    const restored = initialState();
+    save(restored);
+    setDraft({
+      title: 'Помощник для регулярной практики домбры',
+      description: 'Хочу помочь ученикам домбры больше заниматься дома.',
+    });
+    setQuestions([]);
+    setAnswers({});
+    setTask(emptyTask);
+    setSelectedChallengeId('demo-1');
+    setSelectedTeamId('team-1');
+    setTeamName('MusicTech KZ');
+    setProposal(emptyProposal);
+    setTopicFilter('Все темы');
+    setLevelFilter('Все уровни');
+    setPublishConfirmed(false);
+    setScoreChange(null);
+    setShowResetConfirm(false);
+    setMessage('Демонстрационные данные восстановлены.');
+    setScreen(nextScreen);
+  }
+
+  function startDemo() {
+    restoreDemoState('create');
+  }
+
   function navigate(nextScreen) {
     setMessage('');
+    setShowResetConfirm(false);
     setScreen(nextScreen);
   }
 
@@ -498,6 +532,7 @@ function App() {
     }
     setTask(generatedCard);
     setPublishConfirmed(false);
+    setScoreChange(null);
     setMessage('');
     setScreen('task-card');
   }
@@ -505,6 +540,16 @@ function App() {
   function updateTask(field, value) {
     setTask((current) => ({ ...current, [field]: value }));
     setPublishConfirmed(false);
+    setScoreChange(null);
+  }
+
+  function improveCurrentTask() {
+    const before = currentScore.total;
+    const improved = improveTask(task);
+    const after = calculateScore(improved).total;
+    setTask(improved);
+    setPublishConfirmed(false);
+    setScoreChange({ before, after, diff: after - before });
   }
 
   function publishTask() {
@@ -599,6 +644,19 @@ function App() {
 
       {message && <div className="message" role="alert">{message}</div>}
 
+      {showResetConfirm && (
+        <div className="resetOverlay" role="dialog" aria-modal="true">
+          <div className="resetDialog">
+            <h3>Сбросить данные демонстрации?</h3>
+            <p>Будут восстановлены исходные задачи, команды и предложения. Это действие удобно перед живым показом.</p>
+            <div className="actions">
+              <button className="primary" onClick={() => restoreDemoState('home')}>Да, сбросить</button>
+              <button className="secondary" onClick={() => setShowResetConfirm(false)}>Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {screen === 'home' && (
         <main>
           <section className="hero">
@@ -628,6 +686,29 @@ function App() {
               <p>Домбра, практика, задания для студентов и ручной выбор команды.</p>
             </div>
           </section>
+          <section className="page demoScenario">
+            <SectionTitle label="Готово для презентации" title="Демонстрационный сценарий" />
+            <div className="demoFlow">
+              {[
+                'Черновик задачи',
+                'Вопросы ИИ',
+                'Карточка задачи',
+                'Рейтинг готовности',
+                'Публикация',
+                'Отклики команд',
+                'Решение бизнеса',
+              ].map((step, index) => (
+                <div className="demoStep" key={step}>
+                  <span>{index + 1}</span>
+                  <strong>{step}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="actions">
+              <button className="primary" onClick={startDemo}>Запустить демо</button>
+              <button className="secondary" onClick={() => setShowResetConfirm(true)}>Сбросить демонстрационные данные</button>
+            </div>
+          </section>
           <section className="page howItWorks">
             <SectionTitle label="Демо за 5 минут" title="Как это работает" />
             <div className="stepsGrid">
@@ -645,6 +726,19 @@ function App() {
                   <p>{step}</p>
                 </div>
               ))}
+            </div>
+          </section>
+          <section className="page principles">
+            <SectionTitle label="Доверие" title="Принципы платформы" />
+            <div className="principleGrid">
+              {[
+                'ИИ не выдумывает факты',
+                'Бизнес подтверждает карточку перед публикацией',
+                'Низкий рейтинг не скрывает задачу',
+                'Все команды могут откликаться',
+                'Бизнес самостоятельно выбирает команду',
+                'ИИ не назначает исполнителей автоматически',
+              ].map((item) => <span key={item}>{item}</span>)}
             </div>
           </section>
         </main>
@@ -722,7 +816,12 @@ function App() {
             </div>
           </section>
           <aside className="scorePanel">
-            <Score score={currentScore.total} breakdown={currentScore.breakdown} missingInfo={getMissingInfo(task)} />
+            <Score
+              breakdown={currentScore.breakdown}
+              missingInfo={getMissingInfo(task)}
+              score={currentScore.total}
+              scoreChange={scoreChange}
+            />
             <label className="confirmBox">
               <input
                 checked={publishConfirmed}
@@ -732,7 +831,7 @@ function App() {
               Я проверил данные карточки и подтверждаю их
             </label>
             <div className="actions stack">
-              <button className="secondary" onClick={() => setTask(improveTask(task))}>Улучшить задачу с помощью ИИ</button>
+              <button className="secondary" onClick={improveCurrentTask}>Улучшить задачу с помощью ИИ</button>
               <button className="primary" onClick={publishTask}>Подтвердить и опубликовать</button>
             </div>
             <p className="note">Низкий рейтинг не блокирует публикацию. Он показывает, насколько задача понятна для студенческой команды.</p>
@@ -760,13 +859,14 @@ function App() {
             </label>
           </div>
           <div className="catalog">
+            {publishedChallenges.length === 0 && <p className="emptyState">Пока нет опубликованных задач.</p>}
             {filteredChallenges.map((challenge) => {
               const score = calculateScore(challenge);
               return (
                 <article className="challengeCard" key={challenge.id}>
                   <div className="cardHeader">
                     <h3>{challenge.title || 'Задача без названия'}</h3>
-                    <span className={`badge ${levelClass(score.total)}`}>{score.total} / 100 · {getLevel(score.total)}</span>
+                    <span className={`badge ${levelClass(score.total)}`}>{score.total} / 100 — {getLevel(score.total)}</span>
                   </div>
                   <p><strong>Тема:</strong> {challenge.theme || 'Другое'}</p>
                   <p>{challenge.context || 'Описание пока не заполнено.'}</p>
@@ -781,6 +881,10 @@ function App() {
                       <p><strong>Ограничения:</strong> {challenge.constraints || 'Пока не указаны.'}</p>
                       <p><strong>Формат взаимодействия:</strong> {challenge.interactionFormat || 'Пока не указан.'}</p>
                       <p><strong>Контакт / обратная связь:</strong> {challenge.contact || 'Пока не указано.'}</p>
+                      <div className="ratingReason">
+                        <h4>Почему задача получила такой рейтинг?</h4>
+                        <ScoreBreakdown breakdown={score.breakdown} />
+                      </div>
                       <StudentProposal
                         proposal={proposal}
                         selectedTeamId={selectedTeamId}
@@ -796,7 +900,9 @@ function App() {
                 </article>
               );
             })}
-            {filteredChallenges.length === 0 && <p className="note">По выбранным фильтрам задач нет.</p>}
+            {publishedChallenges.length > 0 && filteredChallenges.length === 0 && (
+              <p className="emptyState">По выбранным фильтрам задач не найдено.</p>
+            )}
           </div>
         </main>
       )}
@@ -805,6 +911,7 @@ function App() {
         <main className="page">
           <SectionTitle label="Решение бизнеса" title="Предложения команд" />
           <div className="catalog">
+            {state.proposals.length === 0 && <p className="emptyState">Пока нет предложений команд.</p>}
             {state.proposals.map((item) => {
               const challenge = state.challenges.find((challenge) => challenge.id === item.challengeId);
               return (
@@ -829,6 +936,9 @@ function App() {
                   {item.status === 'Принято' && (
                     <p className="progressPoints">Команда выбрана. Баллы за прогресс: +10</p>
                   )}
+                  {item.status === 'Отклонено' && (
+                    <p className="rejectedNote">Отклик отклонён</p>
+                  )}
                   <p className="note">Команды нельзя назначать автоматически. Бизнес вручную принимает или отклоняет предложение.</p>
                 </article>
               );
@@ -836,6 +946,11 @@ function App() {
           </div>
         </main>
       )}
+      <footer className="footer">
+        <strong>MusicEdu AI</strong>
+        <span>AI Sana Hackathon MVP</span>
+        <span>Музыкальное образование • Практические задачи • ИИ</span>
+      </footer>
     </div>
   );
 }
@@ -849,16 +964,26 @@ function SectionTitle({ label, title }) {
   );
 }
 
-function Score({ score, breakdown, missingInfo = [] }) {
+function Score({ score, breakdown, missingInfo = [], scoreChange = null }) {
   return (
     <div>
       <div className="scoreHero">
-        <span>{score}</span>
+        <span>{score} / 100</span>
         <div>
           <strong>Рейтинг готовности: {score} / 100</strong>
           <p>{getLevel(score)}</p>
+          <p>Насколько задача готова к работе со студентами</p>
         </div>
       </div>
+      <p className="scoreExplanation">Чем выше рейтинг, тем полнее и понятнее задача для студенческих команд.</p>
+      {scoreChange && (
+        <div className="scoreChange">
+          <span>Было: {scoreChange.before} / 100</span>
+          <strong>→</strong>
+          <span>Стало: {scoreChange.after} / 100</span>
+          <b>{scoreChange.diff >= 0 ? '+' : ''}{scoreChange.diff} баллов</b>
+        </div>
+      )}
       <div className="progress" aria-label="Прогресс рейтинга готовности">
         <span style={{ width: `${score}%` }} />
       </div>
@@ -884,6 +1009,19 @@ function Score({ score, breakdown, missingInfo = [] }) {
           <p>Ключевая информация заполнена.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+function ScoreBreakdown({ breakdown }) {
+  return (
+    <div className="miniBreakdown">
+      {breakdown.map((item) => (
+        <div key={item.key}>
+          <span>{item.label}</span>
+          <strong>{item.earned} / {item.weight}</strong>
+        </div>
+      ))}
     </div>
   );
 }
