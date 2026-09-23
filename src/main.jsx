@@ -2,21 +2,21 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const STORAGE_KEY = 'musicedu-ai-state-ru-v5';
+const STORAGE_KEY = 'musicedu-ai-state-ru-v7';
 
 const criteria = [
-  { key: 'contextNeed', label: 'Контекст / потребность', weight: 20 },
-  { key: 'materials', label: 'Данные / материалы', weight: 20 },
+  { key: 'contextNeed', label: 'Контекст и потребность', weight: 20 },
+  { key: 'materials', label: 'Данные и материалы', weight: 20 },
   { key: 'expectedResult', label: 'Ожидаемый результат', weight: 15 },
   { key: 'successCriteria', label: 'Критерии успеха', weight: 15 },
   { key: 'constraints', label: 'Ограничения', weight: 10 },
   { key: 'targetUsers', label: 'Пользователи', weight: 10 },
-  { key: 'contact', label: 'Контакт / обратная связь', weight: 10 },
+  { key: 'contact', label: 'Связь с бизнесом', weight: 10 },
 ];
 
 const emptyTask = {
   title: '',
-  theme: 'Домбра',
+  theme: 'Домбыра',
   context: '',
   need: '',
   targetUsers: '',
@@ -40,31 +40,41 @@ const demoTeams = [
     id: 'team-1',
     name: 'MusicTech KZ',
     members: '3 студента',
-    skills: 'Разработка, ИИ, музыкальное образование',
+    interests: 'Музыкальное образование, домбыра, мотивация учеников',
+    skills: 'Разработка, ИИ, UX',
+    technologies: 'React, JavaScript, CSS',
   },
   {
     id: 'team-2',
     name: 'Лаборатория домбры',
     members: '4 студента',
-    skills: 'Геймификация, веб-разработка, казахская музыка, дизайн интерфейсов',
+    interests: 'Казахская музыка, геймификация, практика домбры',
+    skills: 'Геймификация, веб-разработка, дизайн интерфейсов',
+    technologies: 'React, Vite, локальное хранилище',
   },
   {
     id: 'team-3',
     name: 'Алем Саунд',
     members: '2 студента',
-    skills: 'Музыкальная теория, прототипирование, образовательные продукты',
+    interests: 'Музыкальная теория, слух, образовательные продукты',
+    skills: 'Музыкальная теория, прототипирование, методика обучения',
+    technologies: 'JavaScript, HTML, CSS',
   },
   {
     id: 'team-4',
     name: 'РитмLab',
     members: '3 студента',
+    interests: 'Ритм, игры, обучение через практику',
     skills: 'Игровые механики, интерфейсы, музыкальный ритм',
+    technologies: 'React, Canvas-эскизы, CSS',
   },
   {
     id: 'team-5',
     name: 'Qobyz Code',
     members: '5 студентов',
-    skills: 'Образовательные платформы, тестирование, фронтенд',
+    interests: 'Образовательные платформы, доступные инструменты для учителей',
+    skills: 'Тестирование, фронтенд, исследование пользователей',
+    technologies: 'Vite, React, JavaScript',
   },
 ];
 
@@ -72,7 +82,7 @@ const demoChallenges = [
   {
     id: 'demo-1',
     title: 'Помощник для регулярной практики домбры',
-    theme: 'Домбра',
+    theme: 'Домбыра',
     context: 'Начинающие ученики домбры часто теряют мотивацию между уроками и нерегулярно выполняют домашние упражнения.',
     need: 'Нужен понятный способ поддерживать регулярную практику и показывать ученику маленький прогресс каждый день.',
     targetUsers: 'Ученики домбры 10-16 лет, преподаватели музыкальных школ и родители, которые помогают с домашней практикой.',
@@ -153,7 +163,9 @@ const demoProposals = [
     teamId: 'team-1',
     teamName: 'MusicTech KZ',
     members: '3 студента',
-    skills: 'Разработка, ИИ, музыкальное образование',
+    interests: 'Музыкальное образование, домбыра, мотивация учеников',
+    skills: 'Разработка, ИИ, UX',
+    technologies: 'React, JavaScript, CSS',
     idea: 'Создать веб-прототип с ежедневными заданиями по домбре, визуальным прогрессом, баллами и подсказками преподавателя.',
     plan: 'Сначала собрать упражнения, затем сделать карточки практики, после этого показать прототип преподавателю.',
     timeframe: '7 дней',
@@ -166,7 +178,9 @@ const demoProposals = [
     teamId: 'team-3',
     teamName: 'Алем Саунд',
     members: '2 студента',
-    skills: 'Музыкальная теория, прототипирование, образовательные продукты',
+    interests: 'Музыкальная теория, слух, образовательные продукты',
+    skills: 'Музыкальная теория, прототипирование, методика обучения',
+    technologies: 'JavaScript, HTML, CSS',
     idea: 'Сделать тренажер с короткими вопросами по теории и понятными объяснениями после ответа.',
     plan: 'Подготовить темы, собрать демо-вопросы, сделать экран тренировки и экран результата.',
     timeframe: '5 дней',
@@ -179,7 +193,9 @@ const demoProposals = [
     teamId: 'team-2',
     teamName: 'Лаборатория домбры',
     members: '4 студента',
-    skills: 'Геймификация, веб-разработка, казахская музыка, дизайн интерфейсов',
+    interests: 'Казахская музыка, геймификация, практика домбры',
+    skills: 'Геймификация, веб-разработка, дизайн интерфейсов',
+    technologies: 'React, Vite, локальное хранилище',
     idea: 'Разработать игру с ритмическими уровнями, карточками упражнений и простым механизмом начисления очков.',
     plan: 'Сделать три уровня, добавить баллы, подготовить демо-ритмы и провести ручную проверку с преподавателем.',
     timeframe: '10 дней',
@@ -192,7 +208,9 @@ const demoProposals = [
     teamId: 'team-5',
     teamName: 'Qobyz Code',
     members: '5 студентов',
-    skills: 'Образовательные платформы, тестирование, фронтенд',
+    interests: 'Образовательные платформы, доступные инструменты для учителей',
+    skills: 'Тестирование, фронтенд, исследование пользователей',
+    technologies: 'Vite, React, JavaScript',
     idea: 'Создать личный план практики для начинающего пианиста с ежедневными заданиями и отметками выполнения.',
     plan: 'Описать сценарий, собрать карточки упражнений, сделать прототип плана и проверить навигацию.',
     timeframe: '8 дней',
@@ -205,7 +223,9 @@ const demoProposals = [
     teamId: 'team-4',
     teamName: 'РитмLab',
     members: '3 студента',
+    interests: 'Ритм, игры, обучение через практику',
     skills: 'Игровые механики, интерфейсы, музыкальный ритм',
+    technologies: 'React, Canvas-эскизы, CSS',
     idea: 'Сделать карточный тренажер для музыкального слуха с короткими заданиями и объяснениями.',
     plan: 'Собрать упражнения, сделать экран карточки, добавить результат и подготовить демонстрационный набор.',
     timeframe: '6 дней',
@@ -274,13 +294,13 @@ function inferTheme(title, description) {
   if (text.includes('теори')) return 'Музыкальная теория';
   if (text.includes('пиан') || text.includes('фортепиано')) return 'Фортепиано';
   if (text.includes('слух')) return 'Музыкальный слух';
-  return 'Домбра';
+  return 'Домбыра';
 }
 
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved?.challenges && saved?.proposals) return saved;
+    if (saved?.challenges && saved?.proposals && saved?.teams) return saved;
   } catch {
     return null;
   }
@@ -288,7 +308,44 @@ function loadState() {
   return {
     challenges: demoChallenges,
     proposals: demoProposals,
+    teams: demoTeams,
   };
+}
+
+function isValidTaskCard(card) {
+  return Boolean(card && typeof card === 'object' && 'title' in card && 'context' in card);
+}
+
+function getMissingInfo(task) {
+  const missing = [];
+  const score = calculateScore(task);
+
+  if ((score.breakdown.find((item) => item.key === 'contextNeed')?.earned || 0) < 20) {
+    missing.push('Уточните контекст и потребность');
+  }
+  if ((score.breakdown.find((item) => item.key === 'materials')?.earned || 0) < 20) {
+    missing.push('Укажите доступные материалы');
+  }
+  if ((score.breakdown.find((item) => item.key === 'expectedResult')?.earned || 0) < 15) {
+    missing.push('Опишите ожидаемый результат');
+  }
+  if ((score.breakdown.find((item) => item.key === 'successCriteria')?.earned || 0) < 15) {
+    missing.push('Добавьте критерии успеха');
+  }
+  if ((score.breakdown.find((item) => item.key === 'constraints')?.earned || 0) < 10) {
+    missing.push('Уточните ограничения');
+  }
+  if ((score.breakdown.find((item) => item.key === 'targetUsers')?.earned || 0) < 10) {
+    missing.push('Опишите пользователей');
+  }
+  if ((score.breakdown.find((item) => item.key === 'contact')?.earned || 0) < 10) {
+    missing.push('Укажите формат обратной связи');
+  }
+  if (needsImprovement(task.interactionFormat)) {
+    missing.push('Укажите формат взаимодействия');
+  }
+
+  return missing;
 }
 
 function generateQuestions() {
@@ -305,13 +362,13 @@ function generateTaskCard(draft, answers) {
     title: draft.title || 'Практическая задача по домбре',
     theme: inferTheme(draft.title, draft.description),
     context: draft.description,
-    need: 'Демо-черновик: потребность нужно уточнить перед публикацией.',
+    need: '',
     targetUsers: answers[0] || '',
     materials: answers[1] || '',
     expectedResult: answers[2] || '',
-    successCriteria: 'Демо-черновик: критерии успеха нужно уточнить перед публикацией.',
+    successCriteria: '',
     constraints: answers[3] || '',
-    interactionFormat: 'Демо-черновик: формат взаимодействия нужно согласовать с бизнесом.',
+    interactionFormat: '',
     contact: '',
   };
 }
@@ -320,7 +377,7 @@ function improveTask(task) {
   return {
     ...task,
     title: task.title || 'Помощник для регулярной практики домбры',
-    theme: task.theme || 'Домбра',
+    theme: task.theme || 'Домбыра',
     context: needsImprovement(task.context)
       ? 'Демо-предложение ИИ: начинающим ученикам домбры нужен понятный цифровой помощник, который поддерживает регулярную домашнюю практику между уроками и помогает преподавателю видеть прогресс.'
       : task.context,
@@ -395,7 +452,7 @@ function App() {
   );
 
   const selectedChallenge = publishedChallenges.find((challenge) => challenge.id === selectedChallengeId) || publishedChallenges[0];
-  const selectedTeam = demoTeams.find((team) => team.id === selectedTeamId) || demoTeams[0];
+  const selectedTeam = state.teams.find((team) => team.id === selectedTeamId) || state.teams[0];
   const currentScore = calculateScore(task);
 
   function save(nextState) {
@@ -431,10 +488,15 @@ function App() {
   function createTaskCard() {
     const answeredCount = questions.filter((_, index) => normalizeText(answers[index]).length > 0).length;
     if (answeredCount < 3) {
-      setMessage('Ответьте минимум на 3 уточняющих вопроса, чтобы создать карточку задачи.');
+      setMessage('Ответьте на все обязательные вопросы.');
       return;
     }
-    setTask(generateTaskCard(draft, answers));
+    const generatedCard = generateTaskCard(draft, answers);
+    if (!isValidTaskCard(generatedCard)) {
+      setMessage('Не удалось сформировать карточку. Проверьте ответы и попробуйте снова.');
+      return;
+    }
+    setTask(generatedCard);
     setPublishConfirmed(false);
     setMessage('');
     setScreen('task-card');
@@ -442,6 +504,7 @@ function App() {
 
   function updateTask(field, value) {
     setTask((current) => ({ ...current, [field]: value }));
+    setPublishConfirmed(false);
   }
 
   function publishTask() {
@@ -454,7 +517,7 @@ function App() {
       return;
     }
     if (!publishConfirmed) {
-      setMessage('Подтвердите, что вы проверили данные карточки.');
+      setMessage('Подтвердите карточку перед публикацией.');
       return;
     }
     const newChallenge = {
@@ -496,7 +559,9 @@ function App() {
       teamId: selectedTeam.id,
       teamName: teamName.trim(),
       members: selectedTeam.members,
+      interests: selectedTeam.interests,
       skills: selectedTeam.skills,
+      technologies: selectedTeam.technologies,
       idea: proposal.idea.trim(),
       plan: proposal.plan.trim(),
       timeframe: proposal.timeframe.trim(),
@@ -540,7 +605,7 @@ function App() {
             <div className="heroText">
               <p className="eyebrow">HackAlem AI · музыкальное образование</p>
               <h1>MusicEdu AI</h1>
-              <p>ИИ-платформа для создания и улучшения практических задач в музыкальном образовании</p>
+              <p>ИИ-платформа для превращения бизнес-задач в готовые практические задания для студентов.</p>
               <div className="actions">
                 <button className="primary" onClick={() => navigate('create')}>Создать задачу</button>
                 <button className="secondary" onClick={() => navigate('catalog')}>Каталог задач</button>
@@ -567,9 +632,10 @@ function App() {
             <SectionTitle label="Демо за 5 минут" title="Как это работает" />
             <div className="stepsGrid">
               {[
-                'Создайте практическую задачу',
+                'Создайте задачу',
                 'Ответьте на вопросы ИИ',
-                'Улучшите карточку и повысьте готовность',
+                'Улучшите карточку',
+                'Получите рейтинг',
                 'Опубликуйте задачу',
                 'Получите предложения команд',
                 'Выберите команду вручную',
@@ -636,7 +702,7 @@ function App() {
                 ['theme', 'Тема'],
                 ['context', 'Контекст / проблема'],
                 ['need', 'Потребность'],
-                ['targetUsers', 'Целевая аудитория'],
+                ['targetUsers', 'Пользователи'],
                 ['materials', 'Данные / материалы'],
                 ['expectedResult', 'Ожидаемый результат'],
                 ['successCriteria', 'Критерии успеха'],
@@ -656,7 +722,7 @@ function App() {
             </div>
           </section>
           <aside className="scorePanel">
-            <Score score={currentScore.total} breakdown={currentScore.breakdown} />
+            <Score score={currentScore.total} breakdown={currentScore.breakdown} missingInfo={getMissingInfo(task)} />
             <label className="confirmBox">
               <input
                 checked={publishConfirmed}
@@ -667,7 +733,7 @@ function App() {
             </label>
             <div className="actions stack">
               <button className="secondary" onClick={() => setTask(improveTask(task))}>Улучшить задачу с помощью ИИ</button>
-              <button className="primary" onClick={publishTask}>Опубликовать задачу</button>
+              <button className="primary" onClick={publishTask}>Подтвердить и опубликовать</button>
             </div>
             <p className="note">Низкий рейтинг не блокирует публикацию. Он показывает, насколько задача понятна для студенческой команды.</p>
           </aside>
@@ -704,7 +770,7 @@ function App() {
                   </div>
                   <p><strong>Тема:</strong> {challenge.theme || 'Другое'}</p>
                   <p>{challenge.context || 'Описание пока не заполнено.'}</p>
-                  <p><strong>Целевая аудитория:</strong> {challenge.targetUsers || 'Пока не указана.'}</p>
+                  <p><strong>Пользователи:</strong> {challenge.targetUsers || 'Пока не указаны.'}</p>
                   <button className="linkButton" onClick={() => setSelectedChallengeId(challenge.id)}>Подробнее</button>
                   {selectedChallengeId === challenge.id && (
                     <div className="detailsGrid">
@@ -722,6 +788,7 @@ function App() {
                         setSelectedTeamId={setSelectedTeamId}
                         setTeamName={setTeamName}
                         submitProposal={submitProposal}
+                        teams={state.teams}
                         teamName={teamName}
                       />
                     </div>
@@ -748,7 +815,9 @@ function App() {
                   </div>
                   <p><strong>Задача:</strong> {challenge?.title || 'Задача не найдена'}</p>
                   <p><strong>Участники:</strong> {item.members}</p>
+                  <p><strong>Интересы:</strong> {item.interests}</p>
                   <p><strong>Навыки:</strong> {item.skills}</p>
+                  <p><strong>Технологии:</strong> {item.technologies}</p>
                   <p><strong>Идея решения:</strong> {item.idea}</p>
                   <p><strong>План реализации:</strong> {item.plan}</p>
                   <p><strong>Предполагаемый срок:</strong> {item.timeframe}</p>
@@ -757,6 +826,9 @@ function App() {
                     <button className="primary" onClick={() => decideProposal(item.id, 'Принято')}>Принять</button>
                     <button className="secondary" onClick={() => decideProposal(item.id, 'Отклонено')}>Отклонить</button>
                   </div>
+                  {item.status === 'Принято' && (
+                    <p className="progressPoints">Команда выбрана. Баллы за прогресс: +10</p>
+                  )}
                   <p className="note">Команды нельзя назначать автоматически. Бизнес вручную принимает или отклоняет предложение.</p>
                 </article>
               );
@@ -777,7 +849,7 @@ function SectionTitle({ label, title }) {
   );
 }
 
-function Score({ score, breakdown }) {
+function Score({ score, breakdown, missingInfo = [] }) {
   return (
     <div>
       <div className="scoreHero">
@@ -802,6 +874,16 @@ function Score({ score, breakdown }) {
           <strong>{score} / 100</strong>
         </div>
       </div>
+      <div className="missingInfo">
+        <strong>Чтобы повысить рейтинг:</strong>
+        {missingInfo.length > 0 ? (
+          <ul>
+            {missingInfo.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        ) : (
+          <p>Ключевая информация заполнена.</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -813,12 +895,13 @@ function StudentProposal({
   setSelectedTeamId,
   setTeamName,
   submitProposal,
+  teams,
   teamName,
 }) {
-  const team = demoTeams.find((item) => item.id === selectedTeamId) || demoTeams[0];
+  const team = teams.find((item) => item.id === selectedTeamId) || teams[0];
 
   function selectTeam(id) {
-    const nextTeam = demoTeams.find((item) => item.id === id) || demoTeams[0];
+    const nextTeam = teams.find((item) => item.id === id) || teams[0];
     setSelectedTeamId(id);
     setTeamName(nextTeam.name);
   }
@@ -833,12 +916,14 @@ function StudentProposal({
       <label>
         Демонстрационная команда
         <select value={selectedTeamId} onChange={(event) => selectTeam(event.target.value)}>
-          {demoTeams.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          {teams.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
       <div className="teamInfo">
         <p><strong>Участники:</strong> {team.members}</p>
+        <p><strong>Интересы:</strong> {team.interests}</p>
         <p><strong>Навыки:</strong> {team.skills}</p>
+        <p><strong>Технологии:</strong> {team.technologies}</p>
       </div>
       <label>
         Название команды
