@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const STORAGE_KEY = 'musicedu-ai-state-ru-v4';
+const STORAGE_KEY = 'musicedu-ai-state-ru-v5';
 
 const criteria = [
-  { key: 'context', label: 'Контекст / потребность', weight: 20 },
+  { key: 'contextNeed', label: 'Контекст / потребность', weight: 20 },
   { key: 'materials', label: 'Данные / материалы', weight: 20 },
   { key: 'expectedResult', label: 'Ожидаемый результат', weight: 15 },
   { key: 'successCriteria', label: 'Критерии успеха', weight: 15 },
@@ -16,13 +16,23 @@ const criteria = [
 
 const emptyTask = {
   title: '',
+  theme: 'Домбра',
   context: '',
+  need: '',
   targetUsers: '',
   materials: '',
   expectedResult: '',
   successCriteria: '',
   constraints: '',
+  interactionFormat: '',
   contact: '',
+};
+
+const emptyProposal = {
+  idea: 'Создать интерактивный прототип с заданиями по домбре, баллами и понятным прогрессом для ученика.',
+  plan: '1. Уточнить сценарий урока. 2. Собрать карточки упражнений. 3. Сделать прототип интерфейса. 4. Проверить с преподавателем.',
+  timeframe: '7 дней',
+  prototypeLink: 'https://example.com/demo-prototype',
 };
 
 const demoTeams = [
@@ -44,66 +54,93 @@ const demoTeams = [
     members: '2 студента',
     skills: 'Музыкальная теория, прототипирование, образовательные продукты',
   },
+  {
+    id: 'team-4',
+    name: 'РитмLab',
+    members: '3 студента',
+    skills: 'Игровые механики, интерфейсы, музыкальный ритм',
+  },
+  {
+    id: 'team-5',
+    name: 'Qobyz Code',
+    members: '5 студентов',
+    skills: 'Образовательные платформы, тестирование, фронтенд',
+  },
 ];
 
 const demoChallenges = [
   {
     id: 'demo-1',
     title: 'Помощник для регулярной практики домбры',
+    theme: 'Домбра',
     context: 'Начинающие ученики домбры часто теряют мотивацию между уроками и нерегулярно выполняют домашние упражнения.',
+    need: 'Нужен понятный способ поддерживать регулярную практику и показывать ученику маленький прогресс каждый день.',
     targetUsers: 'Ученики домбры 10-16 лет, преподаватели музыкальных школ и родители, которые помогают с домашней практикой.',
     materials: 'Учебные упражнения по домбре, ритмические схемы, короткие аудиопримеры, заметки преподавателя и демо-журнал практики.',
     expectedResult: 'Веб-прототип помощника, который превращает домашнюю практику в короткие задания с прогрессом и подсказками.',
     successCriteria: 'Ученик выполняет минимум три занятия в неделю, видит понятный прогресс, а преподаватель может оценить регулярность практики.',
     constraints: 'Прототип должен работать в браузере, использовать только синтетические данные и не требовать регистрации учеников.',
+    interactionFormat: 'Команда показывает прототип бизнесу, получает ручную обратную связь и дорабатывает карточки упражнений.',
     contact: 'Преподаватель домбры вручную проверяет предложения команд и дает обратную связь один раз в неделю.',
     published: true,
   },
   {
     id: 'demo-2',
     title: 'ИИ-тренер по музыкальной теории',
+    theme: 'Музыкальная теория',
     context: 'Ученикам сложно связывать ноты, интервалы и базовые термины музыкальной теории с реальными упражнениями.',
+    need: 'Нужен тренажер, который объясняет простые темы понятным языком и помогает преподавателю быстро готовить вопросы.',
     targetUsers: 'Начинающие ученики музыкальной школы, которые изучают домбру, фортепиано или сольфеджио.',
     materials: 'Список базовых тем, примеры вопросов, простые нотные фрагменты и объяснения преподавателя.',
     expectedResult: 'Интерактивный тренажер с короткими вопросами, объяснениями ответов и возможностью редактировать задания.',
     successCriteria: 'После двух тренировок ученик правильно отвечает минимум на 8 из 10 базовых вопросов.',
     constraints: 'Не использовать реальные персональные данные учеников и не подключать внешний ИИ в прототипе.',
+    interactionFormat: 'Преподаватель проверяет набор вопросов перед демонстрацией ученикам.',
     contact: 'Методист музыкальной школы проверяет качество вопросов перед использованием на занятии.',
     published: true,
   },
   {
     id: 'demo-3',
     title: 'Игра для развития чувства ритма',
+    theme: 'Ритм',
     context: 'Ученики понимают мелодию, но часто сбиваются в ритме при игре на домбре или фортепиано.',
+    need: 'Нужен игровой формат, который делает повторение ритма коротким, понятным и мотивирующим.',
     targetUsers: 'Дети 8-14 лет, которые только начинают изучать музыкальный инструмент.',
     materials: 'Набор ритмических рисунков, хлопки, счет вслух, простые упражнения преподавателя.',
     expectedResult: 'Игровой прототип, где ученик повторяет ритм, получает баллы и открывает новые уровни сложности.',
     successCriteria: 'Ученик проходит три ритмических уровня и демонстрирует более стабильный счет на уроке.',
     constraints: 'Без распознавания звука; оценка в демо может быть кнопочной или визуальной.',
+    interactionFormat: 'Команда демонстрирует игру преподавателю и получает ручную оценку удобства.',
     contact: 'Преподаватель вручную подтверждает, подходит ли игра для уроков.',
     published: true,
   },
   {
     id: 'demo-4',
     title: 'Помощник для начинающих пианистов',
+    theme: 'Фортепиано',
     context: 'Начинающие пианисты забывают последовательность упражнений и не понимают, что практиковать дома в первую очередь.',
+    need: 'Нужен простой план домашней практики, чтобы ученик видел очередность заданий и не терялся после урока.',
     targetUsers: 'Ученики первого года обучения на фортепиано и их преподаватели.',
     materials: 'Домашние задания, список гамм, короткие методические заметки и синтетические записи прогресса.',
     expectedResult: 'Прототип личного плана практики с небольшими ежедневными заданиями и отметками выполнения.',
     successCriteria: 'Ученик понимает план занятия и выполняет упражнения без дополнительных объяснений родителей.',
     constraints: 'Без сложной авторизации, без календаря и без хранения реальных файлов.',
+    interactionFormat: 'Преподаватель вручную редактирует задания и проверяет предложенный порядок практики.',
     contact: 'Преподаватель фортепиано проверяет карточки заданий и принимает предложения команд вручную.',
     published: true,
   },
   {
     id: 'demo-5',
     title: 'Тренажёр развития музыкального слуха',
+    theme: 'Музыкальный слух',
     context: 'Ученикам нужно больше коротких упражнений на распознавание высоты звука, направления мелодии и простых интервалов.',
+    need: 'Нужен доступный тренажер, который помогает ученику регулярно повторять слуховые упражнения между уроками.',
     targetUsers: 'Начинающие музыканты, которые изучают домбру, вокал или фортепиано.',
     materials: 'Синтетические примеры упражнений, список интервалов и базовые рекомендации преподавателя.',
     expectedResult: 'Веб-тренажер с карточками для слухового анализа и простыми объяснениями после ответа.',
     successCriteria: 'Ученик регулярно выполняет задания и улучшает точность ответов по сравнению с первой попыткой.',
     constraints: 'В прототипе не реализуется распознавание высоты звука и автоматический анализ живого исполнения.',
+    interactionFormat: 'Команда показывает сценарий преподавателю, а преподаватель вручную оценивает педагогическую пользу.',
     contact: 'Бизнес-заказчик и преподаватель музыки совместно принимают или отклоняют предложения команд.',
     published: true,
   },
@@ -117,18 +154,63 @@ const demoProposals = [
     teamName: 'MusicTech KZ',
     members: '3 студента',
     skills: 'Разработка, ИИ, музыкальное образование',
-    text: 'Мы предлагаем создать веб-прототип с ежедневными заданиями по домбре, визуальным прогрессом, баллами и подсказками преподавателя.',
+    idea: 'Создать веб-прототип с ежедневными заданиями по домбре, визуальным прогрессом, баллами и подсказками преподавателя.',
+    plan: 'Сначала собрать упражнения, затем сделать карточки практики, после этого показать прототип преподавателю.',
+    timeframe: '7 дней',
+    prototypeLink: 'https://example.com/musicedu-dombyra',
     status: 'Ожидает решения',
   },
   {
     id: 'proposal-2',
+    challengeId: 'demo-2',
+    teamId: 'team-3',
+    teamName: 'Алем Саунд',
+    members: '2 студента',
+    skills: 'Музыкальная теория, прототипирование, образовательные продукты',
+    idea: 'Сделать тренажер с короткими вопросами по теории и понятными объяснениями после ответа.',
+    plan: 'Подготовить темы, собрать демо-вопросы, сделать экран тренировки и экран результата.',
+    timeframe: '5 дней',
+    prototypeLink: 'https://example.com/theory-trainer',
+    status: 'Ожидает решения',
+  },
+  {
+    id: 'proposal-3',
     challengeId: 'demo-3',
     teamId: 'team-2',
     teamName: 'Лаборатория домбры',
     members: '4 студента',
     skills: 'Геймификация, веб-разработка, казахская музыка, дизайн интерфейсов',
-    text: 'Команда разработает игру с ритмическими уровнями, карточками упражнений и простым механизмом начисления очков.',
+    idea: 'Разработать игру с ритмическими уровнями, карточками упражнений и простым механизмом начисления очков.',
+    plan: 'Сделать три уровня, добавить баллы, подготовить демо-ритмы и провести ручную проверку с преподавателем.',
+    timeframe: '10 дней',
+    prototypeLink: 'https://example.com/rhythm-game',
     status: 'Ожидает решения',
+  },
+  {
+    id: 'proposal-4',
+    challengeId: 'demo-4',
+    teamId: 'team-5',
+    teamName: 'Qobyz Code',
+    members: '5 студентов',
+    skills: 'Образовательные платформы, тестирование, фронтенд',
+    idea: 'Создать личный план практики для начинающего пианиста с ежедневными заданиями и отметками выполнения.',
+    plan: 'Описать сценарий, собрать карточки упражнений, сделать прототип плана и проверить навигацию.',
+    timeframe: '8 дней',
+    prototypeLink: 'https://example.com/piano-plan',
+    status: 'Принято',
+  },
+  {
+    id: 'proposal-5',
+    challengeId: 'demo-5',
+    teamId: 'team-4',
+    teamName: 'РитмLab',
+    members: '3 студента',
+    skills: 'Игровые механики, интерфейсы, музыкальный ритм',
+    idea: 'Сделать карточный тренажер для музыкального слуха с короткими заданиями и объяснениями.',
+    plan: 'Собрать упражнения, сделать экран карточки, добавить результат и подготовить демонстрационный набор.',
+    timeframe: '6 дней',
+    prototypeLink: 'https://example.com/ear-training',
+    status: 'Отклонено',
   },
 ];
 
@@ -149,10 +231,15 @@ function needsImprovement(text) {
   return normalizeText(text).length < 70;
 }
 
+function getCriterionText(task, key) {
+  if (key === 'contextNeed') return `${task.context || ''} ${task.need || ''}`;
+  return task[key] || '';
+}
+
 function calculateScore(task) {
   const breakdown = criteria.map((criterion) => ({
     ...criterion,
-    earned: fieldScore(task[criterion.key] || '', criterion.weight),
+    earned: fieldScore(getCriterionText(task, criterion.key), criterion.weight),
   }));
 
   return {
@@ -181,6 +268,15 @@ function statusClass(status) {
   return 'pending';
 }
 
+function inferTheme(title, description) {
+  const text = `${title} ${description}`.toLowerCase();
+  if (text.includes('ритм')) return 'Ритм';
+  if (text.includes('теори')) return 'Музыкальная теория';
+  if (text.includes('пиан') || text.includes('фортепиано')) return 'Фортепиано';
+  if (text.includes('слух')) return 'Музыкальный слух';
+  return 'Домбра';
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -207,12 +303,15 @@ function generateQuestions() {
 function generateTaskCard(draft, answers) {
   return {
     title: draft.title || 'Практическая задача по домбре',
+    theme: inferTheme(draft.title, draft.description),
     context: draft.description,
+    need: 'Демо-черновик: потребность нужно уточнить перед публикацией.',
     targetUsers: answers[0] || '',
     materials: answers[1] || '',
     expectedResult: answers[2] || '',
     successCriteria: 'Демо-черновик: критерии успеха нужно уточнить перед публикацией.',
     constraints: answers[3] || '',
+    interactionFormat: 'Демо-черновик: формат взаимодействия нужно согласовать с бизнесом.',
     contact: '',
   };
 }
@@ -221,9 +320,13 @@ function improveTask(task) {
   return {
     ...task,
     title: task.title || 'Помощник для регулярной практики домбры',
+    theme: task.theme || 'Домбра',
     context: needsImprovement(task.context)
       ? 'Демо-предложение ИИ: начинающим ученикам домбры нужен понятный цифровой помощник, который поддерживает регулярную домашнюю практику между уроками и помогает преподавателю видеть прогресс.'
       : task.context,
+    need: needsImprovement(task.need)
+      ? 'Демо-предложение ИИ: повысить регулярность домашних занятий и дать ученику понятные маленькие шаги для самостоятельной практики.'
+      : task.need,
     targetUsers: needsImprovement(task.targetUsers)
       ? 'Демо-предложение ИИ: ученики домбры 10-16 лет, преподаватели музыкальных школ и родители, которые помогают контролировать домашнюю практику.'
       : task.targetUsers,
@@ -239,6 +342,9 @@ function improveTask(task) {
     constraints: needsImprovement(task.constraints)
       ? 'Демо-предложение ИИ: только браузерный прототип, без реальных персональных данных, без внешнего ИИ и без автоматического назначения команд.'
       : task.constraints,
+    interactionFormat: needsImprovement(task.interactionFormat)
+      ? 'Демо-предложение ИИ: команда показывает прототип бизнесу, получает ручную обратную связь и дорабатывает карточку задачи.'
+      : task.interactionFormat,
     contact: needsImprovement(task.contact)
       ? 'Демо: преподаватель отвечает вручную.'
       : task.contact,
@@ -258,7 +364,10 @@ function App() {
   const [selectedChallengeId, setSelectedChallengeId] = useState('demo-1');
   const [selectedTeamId, setSelectedTeamId] = useState('team-1');
   const [teamName, setTeamName] = useState('MusicTech KZ');
-  const [proposalText, setProposalText] = useState('Предлагаем создать интерактивный прототип с заданиями по домбре, баллами и понятным прогрессом для ученика.');
+  const [proposal, setProposal] = useState(emptyProposal);
+  const [topicFilter, setTopicFilter] = useState('Все темы');
+  const [levelFilter, setLevelFilter] = useState('Все уровни');
+  const [publishConfirmed, setPublishConfirmed] = useState(false);
   const [message, setMessage] = useState('');
 
   const publishedChallenges = useMemo(
@@ -268,6 +377,21 @@ function App() {
         .map((challenge) => ({ ...challenge, score: calculateScore(challenge).total }))
         .sort((a, b) => b.score - a.score),
     [state.challenges]
+  );
+
+  const topics = useMemo(
+    () => ['Все темы', ...Array.from(new Set(publishedChallenges.map((challenge) => challenge.theme || 'Другое')))],
+    [publishedChallenges]
+  );
+
+  const filteredChallenges = useMemo(
+    () =>
+      publishedChallenges.filter((challenge) => {
+        const topicMatches = topicFilter === 'Все темы' || (challenge.theme || 'Другое') === topicFilter;
+        const levelMatches = levelFilter === 'Все уровни' || getLevel(challenge.score) === levelFilter;
+        return topicMatches && levelMatches;
+      }),
+    [publishedChallenges, topicFilter, levelFilter]
   );
 
   const selectedChallenge = publishedChallenges.find((challenge) => challenge.id === selectedChallengeId) || publishedChallenges[0];
@@ -311,6 +435,7 @@ function App() {
       return;
     }
     setTask(generateTaskCard(draft, answers));
+    setPublishConfirmed(false);
     setMessage('');
     setScreen('task-card');
   }
@@ -328,12 +453,17 @@ function App() {
       setMessage('Перед публикацией заполните контекст или проблему.');
       return;
     }
+    if (!publishConfirmed) {
+      setMessage('Подтвердите, что вы проверили данные карточки.');
+      return;
+    }
     const newChallenge = {
       ...task,
       id: `challenge-${Date.now()}`,
       published: true,
     };
     save({ ...state, challenges: [...state.challenges, newChallenge] });
+    setPublishConfirmed(false);
     goToCatalog(newChallenge.id);
   }
 
@@ -347,8 +477,16 @@ function App() {
       setMessage('Введите название команды.');
       return;
     }
-    if (!proposalText.trim()) {
-      setMessage('Введите предложение по решению.');
+    if (!proposal.idea.trim()) {
+      setMessage('Введите идею решения.');
+      return;
+    }
+    if (!proposal.plan.trim()) {
+      setMessage('Введите план реализации.');
+      return;
+    }
+    if (!proposal.timeframe.trim()) {
+      setMessage('Введите предполагаемый срок.');
       return;
     }
 
@@ -359,13 +497,16 @@ function App() {
       teamName: teamName.trim(),
       members: selectedTeam.members,
       skills: selectedTeam.skills,
-      text: proposalText.trim(),
+      idea: proposal.idea.trim(),
+      plan: proposal.plan.trim(),
+      timeframe: proposal.timeframe.trim(),
+      prototypeLink: proposal.prototypeLink.trim(),
       status: 'Ожидает решения',
     };
 
     save({ ...state, proposals: [...state.proposals, newProposal] });
     setMessage('');
-    setProposalText('');
+    setProposal(emptyProposal);
     setScreen('proposals');
   }
 
@@ -373,8 +514,8 @@ function App() {
     setMessage('');
     save({
       ...state,
-      proposals: state.proposals.map((proposal) =>
-        proposal.id === id ? { ...proposal, status } : proposal
+      proposals: state.proposals.map((item) =>
+        item.id === id ? { ...item, status } : item
       ),
     });
   }
@@ -492,17 +633,20 @@ function App() {
             <div className="panel formGrid">
               {[
                 ['title', 'Название'],
+                ['theme', 'Тема'],
                 ['context', 'Контекст / проблема'],
+                ['need', 'Потребность'],
                 ['targetUsers', 'Целевая аудитория'],
                 ['materials', 'Данные / материалы'],
                 ['expectedResult', 'Ожидаемый результат'],
                 ['successCriteria', 'Критерии успеха'],
                 ['constraints', 'Ограничения'],
+                ['interactionFormat', 'Формат взаимодействия'],
                 ['contact', 'Контакт / обратная связь'],
               ].map(([field, label]) => (
                 <label key={field}>
                   {label}
-                  {field === 'title' ? (
+                  {field === 'title' || field === 'theme' ? (
                     <input value={task[field]} onChange={(event) => updateTask(field, event.target.value)} />
                   ) : (
                     <textarea rows="3" value={task[field]} onChange={(event) => updateTask(field, event.target.value)} />
@@ -513,6 +657,14 @@ function App() {
           </section>
           <aside className="scorePanel">
             <Score score={currentScore.total} breakdown={currentScore.breakdown} />
+            <label className="confirmBox">
+              <input
+                checked={publishConfirmed}
+                onChange={(event) => setPublishConfirmed(event.target.checked)}
+                type="checkbox"
+              />
+              Я проверил данные карточки и подтверждаю их
+            </label>
             <div className="actions stack">
               <button className="secondary" onClick={() => setTask(improveTask(task))}>Улучшить задачу с помощью ИИ</button>
               <button className="primary" onClick={publishTask}>Опубликовать задачу</button>
@@ -525,8 +677,24 @@ function App() {
       {screen === 'catalog' && (
         <main className="page">
           <SectionTitle label="Публичный раздел" title="Каталог практических задач" />
+          <div className="filters panel">
+            <label>
+              Тема
+              <select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}>
+                {topics.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
+              </select>
+            </label>
+            <label>
+              Уровень готовности
+              <select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>
+                {['Все уровни', 'Черновик', 'В работе', 'Готово', 'Приоритетная задача'].map((level) => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <div className="catalog">
-            {publishedChallenges.map((challenge) => {
+            {filteredChallenges.map((challenge) => {
               const score = calculateScore(challenge);
               return (
                 <article className="challengeCard" key={challenge.id}>
@@ -534,30 +702,34 @@ function App() {
                     <h3>{challenge.title || 'Задача без названия'}</h3>
                     <span className={`badge ${levelClass(score.total)}`}>{score.total} / 100 · {getLevel(score.total)}</span>
                   </div>
+                  <p><strong>Тема:</strong> {challenge.theme || 'Другое'}</p>
                   <p>{challenge.context || 'Описание пока не заполнено.'}</p>
                   <p><strong>Целевая аудитория:</strong> {challenge.targetUsers || 'Пока не указана.'}</p>
                   <button className="linkButton" onClick={() => setSelectedChallengeId(challenge.id)}>Подробнее</button>
                   {selectedChallengeId === challenge.id && (
                     <div className="detailsGrid">
+                      <p><strong>Потребность:</strong> {challenge.need || 'Пока не указана.'}</p>
                       <p><strong>Данные / материалы:</strong> {challenge.materials || 'Пока не указаны.'}</p>
                       <p><strong>Ожидаемый результат:</strong> {challenge.expectedResult || 'Пока не указан.'}</p>
                       <p><strong>Критерии успеха:</strong> {challenge.successCriteria || 'Пока не указаны.'}</p>
                       <p><strong>Ограничения:</strong> {challenge.constraints || 'Пока не указаны.'}</p>
+                      <p><strong>Формат взаимодействия:</strong> {challenge.interactionFormat || 'Пока не указан.'}</p>
                       <p><strong>Контакт / обратная связь:</strong> {challenge.contact || 'Пока не указано.'}</p>
                       <StudentProposal
+                        proposal={proposal}
                         selectedTeamId={selectedTeamId}
+                        setProposal={setProposal}
                         setSelectedTeamId={setSelectedTeamId}
-                        teamName={teamName}
                         setTeamName={setTeamName}
-                        proposalText={proposalText}
-                        setProposalText={setProposalText}
                         submitProposal={submitProposal}
+                        teamName={teamName}
                       />
                     </div>
                   )}
                 </article>
               );
             })}
+            {filteredChallenges.length === 0 && <p className="note">По выбранным фильтрам задач нет.</p>}
           </div>
         </main>
       )}
@@ -566,21 +738,24 @@ function App() {
         <main className="page">
           <SectionTitle label="Решение бизнеса" title="Предложения команд" />
           <div className="catalog">
-            {state.proposals.map((proposal) => {
-              const challenge = state.challenges.find((item) => item.id === proposal.challengeId);
+            {state.proposals.map((item) => {
+              const challenge = state.challenges.find((challenge) => challenge.id === item.challengeId);
               return (
-                <article className="challengeCard" key={proposal.id}>
+                <article className="challengeCard" key={item.id}>
                   <div className="cardHeader">
-                    <h3>{proposal.teamName}</h3>
-                    <span className={`status ${statusClass(proposal.status)}`}>{proposal.status}</span>
+                    <h3>{item.teamName}</h3>
+                    <span className={`status ${statusClass(item.status)}`}>{item.status}</span>
                   </div>
                   <p><strong>Задача:</strong> {challenge?.title || 'Задача не найдена'}</p>
-                  <p><strong>Участники:</strong> {proposal.members}</p>
-                  <p><strong>Навыки:</strong> {proposal.skills}</p>
-                  <p>{proposal.text}</p>
+                  <p><strong>Участники:</strong> {item.members}</p>
+                  <p><strong>Навыки:</strong> {item.skills}</p>
+                  <p><strong>Идея решения:</strong> {item.idea}</p>
+                  <p><strong>План реализации:</strong> {item.plan}</p>
+                  <p><strong>Предполагаемый срок:</strong> {item.timeframe}</p>
+                  <p><strong>Ссылка на прототип:</strong> {item.prototypeLink || 'Не указана'}</p>
                   <div className="actions">
-                    <button className="primary" onClick={() => decideProposal(proposal.id, 'Принято')}>Принять</button>
-                    <button className="secondary" onClick={() => decideProposal(proposal.id, 'Отклонено')}>Отклонить</button>
+                    <button className="primary" onClick={() => decideProposal(item.id, 'Принято')}>Принять</button>
+                    <button className="secondary" onClick={() => decideProposal(item.id, 'Отклонено')}>Отклонить</button>
                   </div>
                   <p className="note">Команды нельзя назначать автоматически. Бизнес вручную принимает или отклоняет предложение.</p>
                 </article>
@@ -632,13 +807,13 @@ function Score({ score, breakdown }) {
 }
 
 function StudentProposal({
+  proposal,
   selectedTeamId,
+  setProposal,
   setSelectedTeamId,
-  teamName,
   setTeamName,
-  proposalText,
-  setProposalText,
   submitProposal,
+  teamName,
 }) {
   const team = demoTeams.find((item) => item.id === selectedTeamId) || demoTeams[0];
 
@@ -646,6 +821,10 @@ function StudentProposal({
     const nextTeam = demoTeams.find((item) => item.id === id) || demoTeams[0];
     setSelectedTeamId(id);
     setTeamName(nextTeam.name);
+  }
+
+  function updateProposal(field, value) {
+    setProposal((current) => ({ ...current, [field]: value }));
   }
 
   return (
@@ -666,12 +845,37 @@ function StudentProposal({
         <input value={teamName} onChange={(event) => setTeamName(event.target.value)} />
       </label>
       <label>
-        Предложение по решению
+        Идея решения
+        <textarea
+          rows="3"
+          value={proposal.idea}
+          onChange={(event) => updateProposal('idea', event.target.value)}
+          placeholder="Опишите основную идею решения..."
+        />
+      </label>
+      <label>
+        План реализации
         <textarea
           rows="4"
-          value={proposalText}
-          onChange={(event) => setProposalText(event.target.value)}
-          placeholder="Опишите, какое решение команда предлагает разработать..."
+          value={proposal.plan}
+          onChange={(event) => updateProposal('plan', event.target.value)}
+          placeholder="Опишите этапы реализации..."
+        />
+      </label>
+      <label>
+        Предполагаемый срок
+        <input
+          value={proposal.timeframe}
+          onChange={(event) => updateProposal('timeframe', event.target.value)}
+          placeholder="Например: 7 дней"
+        />
+      </label>
+      <label>
+        Ссылка на прототип
+        <input
+          value={proposal.prototypeLink}
+          onChange={(event) => updateProposal('prototypeLink', event.target.value)}
+          placeholder="https://example.com/prototype"
         />
       </label>
       <button className="primary" type="submit">Отправить предложение</button>

@@ -301,6 +301,23 @@ textarea {
   gap: 2px;
 }
 
+.confirmBox {
+  align-items: flex-start;
+  background: #fffaf0;
+  border: 1px solid rgba(154, 93, 29, 0.16);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  line-height: 1.45;
+  margin: 18px 0 0;
+  padding: 12px;
+}
+
+.confirmBox input {
+  margin-top: 3px;
+  width: auto;
+}
+
 .scoreHero {
   align-items: center;
   display: flex;
@@ -364,6 +381,17 @@ textarea {
 .catalog {
   display: grid;
   gap: 18px;
+}
+
+.filters {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.filters label {
+  margin: 0;
 }
 
 .challengeCard h3 {
@@ -470,7 +498,8 @@ summary {
 
 @media (max-width: 860px) {
   .hero,
-  .twoColumn {
+  .twoColumn,
+  .filters {
     grid-template-columns: 1fr;
   }
 
