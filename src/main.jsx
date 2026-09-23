@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const STORAGE_KEY = 'musicedu-ai-state-ru-v1';
+const STORAGE_KEY = 'musicedu-ai-state-ru-v4';
 
 const criteria = [
   { key: 'context', label: 'Контекст / потребность', weight: 20 },
@@ -30,7 +30,7 @@ const demoTeams = [
     id: 'team-1',
     name: 'MusicTech KZ',
     members: '3 студента',
-    skills: 'Разработка, ИИ, пользовательский опыт, музыкальное образование',
+    skills: 'Разработка, ИИ, музыкальное образование',
   },
   {
     id: 'team-2',
@@ -97,7 +97,7 @@ const demoChallenges = [
   },
   {
     id: 'demo-5',
-    title: 'Тренажер развития музыкального слуха',
+    title: 'Тренажёр развития музыкального слуха',
     context: 'Ученикам нужно больше коротких упражнений на распознавание высоты звука, направления мелодии и простых интервалов.',
     targetUsers: 'Начинающие музыканты, которые изучают домбру, вокал или фортепиано.',
     materials: 'Синтетические примеры упражнений, список интервалов и базовые рекомендации преподавателя.',
@@ -116,7 +116,7 @@ const demoProposals = [
     teamId: 'team-1',
     teamName: 'MusicTech KZ',
     members: '3 студента',
-    skills: 'Разработка, ИИ, пользовательский опыт, музыкальное образование',
+    skills: 'Разработка, ИИ, музыкальное образование',
     text: 'Мы предлагаем создать веб-прототип с ежедневными заданиями по домбре, визуальным прогрессом, баллами и подсказками преподавателя.',
     status: 'Ожидает решения',
   },
@@ -132,14 +132,27 @@ const demoProposals = [
   },
 ];
 
-function hasMeaningfulText(text) {
-  return text.trim().replace(/\s+/g, ' ').length >= 20;
+function normalizeText(text) {
+  return String(text || '').trim().replace(/\s+/g, ' ');
+}
+
+function fieldScore(text, weight) {
+  const length = normalizeText(text).length;
+  if (length === 0) return 0;
+  if (length < 60) return Math.round(weight * 0.4);
+  if (length < 120) return Math.round(weight * 0.6);
+  if (length < 180) return Math.round(weight * 0.8);
+  return weight;
+}
+
+function needsImprovement(text) {
+  return normalizeText(text).length < 70;
 }
 
 function calculateScore(task) {
   const breakdown = criteria.map((criterion) => ({
     ...criterion,
-    earned: hasMeaningfulText(task[criterion.key] || '') ? criterion.weight : 0,
+    earned: fieldScore(task[criterion.key] || '', criterion.weight),
   }));
 
   return {
@@ -162,6 +175,12 @@ function levelClass(score) {
   return 'draft';
 }
 
+function statusClass(status) {
+  if (status === 'Принято') return 'accepted';
+  if (status === 'Отклонено') return 'rejected';
+  return 'pending';
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -178,10 +197,10 @@ function loadState() {
 
 function generateQuestions() {
   return [
-    'Кто является целевой аудиторией и какой у нее уровень подготовки?',
-    'Какие учебные материалы или данные доступны для студенческой команды?',
+    'Кто является целевой аудиторией?',
+    'Какие учебные материалы или данные доступны?',
     'Какой результат должна обеспечить разработка?',
-    'Какие есть ограничения и как бизнес поймет, что решение успешно?',
+    'Какие есть ограничения?',
   ];
 }
 
@@ -192,7 +211,7 @@ function generateTaskCard(draft, answers) {
     targetUsers: answers[0] || '',
     materials: answers[1] || '',
     expectedResult: answers[2] || '',
-    successCriteria: '',
+    successCriteria: 'Демо-черновик: критерии успеха нужно уточнить перед публикацией.',
     constraints: answers[3] || '',
     contact: '',
   };
@@ -202,27 +221,27 @@ function improveTask(task) {
   return {
     ...task,
     title: task.title || 'Помощник для регулярной практики домбры',
-    context: hasMeaningfulText(task.context)
-      ? task.context
-      : 'Демо-предложение ИИ: начинающим ученикам домбры нужен понятный цифровой помощник, который поддерживает регулярную домашнюю практику между уроками.',
-    targetUsers: hasMeaningfulText(task.targetUsers)
-      ? task.targetUsers
-      : 'Демо-предложение ИИ: ученики домбры 10-16 лет, преподаватели музыкальных школ и родители, которые помогают контролировать практику.',
-    materials: hasMeaningfulText(task.materials)
-      ? task.materials
-      : 'Демо-предложение ИИ: упражнения по домбре, ритмические схемы, короткие аудиопримеры, заметки преподавателя и синтетический журнал занятий.',
-    expectedResult: hasMeaningfulText(task.expectedResult)
-      ? task.expectedResult
-      : 'Демо-предложение ИИ: веб-прототип с карточками упражнений, баллами, прогрессом и подсказками для домашней практики.',
-    successCriteria: hasMeaningfulText(task.successCriteria)
-      ? task.successCriteria
-      : 'Демо-предложение ИИ: ученик выполняет минимум три занятия в неделю, понимает следующее упражнение и показывает более стабильный прогресс на уроке.',
-    constraints: hasMeaningfulText(task.constraints)
-      ? task.constraints
-      : 'Демо-предложение ИИ: только браузерный прототип, без реальных персональных данных, без внешнего ИИ и без автоматического назначения команд.',
-    contact: hasMeaningfulText(task.contact)
-      ? task.contact
-      : 'Демо-предложение ИИ: преподаватель домбры или представитель бизнеса вручную рассматривает предложения команд и дает обратную связь.',
+    context: needsImprovement(task.context)
+      ? 'Демо-предложение ИИ: начинающим ученикам домбры нужен понятный цифровой помощник, который поддерживает регулярную домашнюю практику между уроками и помогает преподавателю видеть прогресс.'
+      : task.context,
+    targetUsers: needsImprovement(task.targetUsers)
+      ? 'Демо-предложение ИИ: ученики домбры 10-16 лет, преподаватели музыкальных школ и родители, которые помогают контролировать домашнюю практику.'
+      : task.targetUsers,
+    materials: needsImprovement(task.materials)
+      ? 'Демо-предложение ИИ: упражнения по домбре, ритмические схемы, короткие аудиопримеры, заметки преподавателя и синтетический журнал занятий.'
+      : task.materials,
+    expectedResult: needsImprovement(task.expectedResult)
+      ? 'Демо-предложение ИИ: веб-прототип с карточками упражнений, баллами, прогрессом и подсказками для регулярной домашней практики.'
+      : task.expectedResult,
+    successCriteria: needsImprovement(task.successCriteria)
+      ? 'Демо-предложение ИИ: ученик выполняет минимум три занятия в неделю, понимает следующее упражнение и показывает более стабильный прогресс на уроке.'
+      : task.successCriteria,
+    constraints: needsImprovement(task.constraints)
+      ? 'Демо-предложение ИИ: только браузерный прототип, без реальных персональных данных, без внешнего ИИ и без автоматического назначения команд.'
+      : task.constraints,
+    contact: needsImprovement(task.contact)
+      ? 'Демо: преподаватель отвечает вручную.'
+      : task.contact,
   };
 }
 
@@ -240,6 +259,7 @@ function App() {
   const [selectedTeamId, setSelectedTeamId] = useState('team-1');
   const [teamName, setTeamName] = useState('MusicTech KZ');
   const [proposalText, setProposalText] = useState('Предлагаем создать интерактивный прототип с заданиями по домбре, баллами и понятным прогрессом для ученика.');
+  const [message, setMessage] = useState('');
 
   const publishedChallenges = useMemo(
     () =>
@@ -259,19 +279,39 @@ function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
   }
 
+  function navigate(nextScreen) {
+    setMessage('');
+    setScreen(nextScreen);
+  }
+
   function goToCatalog(challengeId) {
     if (challengeId) setSelectedChallengeId(challengeId);
-    setScreen('catalog');
+    navigate('catalog');
   }
 
   function analyzeWithAI() {
-    setQuestions(generateQuestions(draft));
+    if (!draft.title.trim()) {
+      setMessage('Введите название задачи.');
+      return;
+    }
+    if (!draft.description.trim()) {
+      setMessage('Введите описание проблемы.');
+      return;
+    }
+    setQuestions(generateQuestions());
     setAnswers({});
+    setMessage('');
     setScreen('questions');
   }
 
   function createTaskCard() {
+    const answeredCount = questions.filter((_, index) => normalizeText(answers[index]).length > 0).length;
+    if (answeredCount < 3) {
+      setMessage('Ответьте минимум на 3 уточняющих вопроса, чтобы создать карточку задачи.');
+      return;
+    }
     setTask(generateTaskCard(draft, answers));
+    setMessage('');
     setScreen('task-card');
   }
 
@@ -280,21 +320,37 @@ function App() {
   }
 
   function publishTask() {
+    if (!task.title.trim()) {
+      setMessage('Перед публикацией укажите название задачи.');
+      return;
+    }
+    if (!task.context.trim()) {
+      setMessage('Перед публикацией заполните контекст или проблему.');
+      return;
+    }
     const newChallenge = {
       ...task,
       id: `challenge-${Date.now()}`,
       published: true,
     };
-    save({
-      ...state,
-      challenges: [...state.challenges, newChallenge],
-    });
+    save({ ...state, challenges: [...state.challenges, newChallenge] });
     goToCatalog(newChallenge.id);
   }
 
   function submitProposal(event) {
     event.preventDefault();
-    if (!selectedChallenge || !teamName.trim() || !proposalText.trim()) return;
+    if (!selectedChallenge) {
+      setMessage('Откройте задачу в каталоге перед отправкой предложения.');
+      return;
+    }
+    if (!teamName.trim()) {
+      setMessage('Введите название команды.');
+      return;
+    }
+    if (!proposalText.trim()) {
+      setMessage('Введите предложение по решению.');
+      return;
+    }
 
     const newProposal = {
       id: `proposal-${Date.now()}`,
@@ -307,15 +363,14 @@ function App() {
       status: 'Ожидает решения',
     };
 
-    save({
-      ...state,
-      proposals: [...state.proposals, newProposal],
-    });
+    save({ ...state, proposals: [...state.proposals, newProposal] });
+    setMessage('');
     setProposalText('');
     setScreen('proposals');
   }
 
   function decideProposal(id, status) {
+    setMessage('');
     save({
       ...state,
       proposals: state.proposals.map((proposal) =>
@@ -327,41 +382,63 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <button className="brand" onClick={() => setScreen('home')}>MusicEdu AI</button>
+        <button className="brand" onClick={() => navigate('home')}>MusicEdu AI</button>
         <nav>
-          <button onClick={() => setScreen('home')}>Главная</button>
-          <button onClick={() => setScreen('create')}>Создать задачу</button>
-          <button onClick={() => setScreen('catalog')}>Каталог</button>
-          <button onClick={() => setScreen('proposals')}>Предложения</button>
+          <button onClick={() => navigate('home')}>Главная</button>
+          <button onClick={() => navigate('create')}>Создать задачу</button>
+          <button onClick={() => navigate('catalog')}>Каталог</button>
+          <button onClick={() => navigate('proposals')}>Предложения</button>
         </nav>
       </header>
 
+      {message && <div className="message" role="alert">{message}</div>}
+
       {screen === 'home' && (
-        <main className="hero">
-          <section className="heroText">
-            <p className="eyebrow">HackAlem AI · музыкальное образование</p>
-            <h1>MusicEdu AI</h1>
-            <p>ИИ-платформа для создания и улучшения практических задач в музыкальном образовании</p>
-            <div className="actions">
-              <button className="primary" onClick={() => setScreen('create')}>Создать задачу</button>
-              <button className="secondary" onClick={() => setScreen('catalog')}>Каталог задач</button>
+        <main>
+          <section className="hero">
+            <div className="heroText">
+              <p className="eyebrow">HackAlem AI · музыкальное образование</p>
+              <h1>MusicEdu AI</h1>
+              <p>ИИ-платформа для создания и улучшения практических задач в музыкальном образовании</p>
+              <div className="actions">
+                <button className="primary" onClick={() => navigate('create')}>Создать задачу</button>
+                <button className="secondary" onClick={() => navigate('catalog')}>Каталог задач</button>
+              </div>
+              <div className="featureGrid">
+                <span>Музыкальное образование</span>
+                <span>ИИ-помощник</span>
+                <span>Практические задания</span>
+              </div>
             </div>
-            <div className="featureGrid">
-              <span>Музыкальное образование</span>
-              <span>ИИ-помощник</span>
-              <span>Практические задания</span>
+            <div className="instrumentPanel" aria-label="Визуальный блок с домброй">
+              <div className="strings" />
+              <div className="soundHole" />
+              <div className="frets">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <p>Домбра, практика, задания для студентов и ручной выбор команды.</p>
             </div>
           </section>
-          <section className="instrumentPanel" aria-label="Визуальный блок с домброй">
-            <div className="strings" />
-            <div className="soundHole" />
-            <div className="frets">
-              <span />
-              <span />
-              <span />
-              <span />
+          <section className="page howItWorks">
+            <SectionTitle label="Демо за 5 минут" title="Как это работает" />
+            <div className="stepsGrid">
+              {[
+                'Создайте практическую задачу',
+                'Ответьте на вопросы ИИ',
+                'Улучшите карточку и повысьте готовность',
+                'Опубликуйте задачу',
+                'Получите предложения команд',
+                'Выберите команду вручную',
+              ].map((step, index) => (
+                <div className="stepCard" key={step}>
+                  <span>{index + 1}</span>
+                  <p>{step}</p>
+                </div>
+              ))}
             </div>
-            <p>Домбра, практика, задания для студентов и ручной выбор команды.</p>
           </section>
         </main>
       )}
@@ -454,7 +531,7 @@ function App() {
               return (
                 <article className="challengeCard" key={challenge.id}>
                   <div className="cardHeader">
-                    <h3>{challenge.title}</h3>
+                    <h3>{challenge.title || 'Задача без названия'}</h3>
                     <span className={`badge ${levelClass(score.total)}`}>{score.total} / 100 · {getLevel(score.total)}</span>
                   </div>
                   <p>{challenge.context || 'Описание пока не заполнено.'}</p>
@@ -545,6 +622,10 @@ function Score({ score, breakdown }) {
             <strong>{item.earned} / {item.weight}</strong>
           </div>
         ))}
+        <div className="totalScore">
+          <span>Итого</span>
+          <strong>{score} / 100</strong>
+        </div>
       </div>
     </div>
   );
@@ -596,12 +677,6 @@ function StudentProposal({
       <button className="primary" type="submit">Отправить предложение</button>
     </form>
   );
-}
-
-function statusClass(status) {
-  if (status === 'Принято') return 'accepted';
-  if (status === 'Отклонено') return 'rejected';
-  return 'pending';
 }
 
 createRoot(document.getElementById('root')).render(<App />);

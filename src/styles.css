@@ -111,6 +111,18 @@ nav button,
   margin-top: 18px;
 }
 
+.message {
+  background: #fff0cf;
+  border: 1px solid rgba(132, 85, 18, 0.2);
+  border-radius: 8px;
+  color: #6f4306;
+  font-weight: 800;
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 12px 16px;
+  width: calc(100% - 40px);
+}
+
 .featureGrid {
   display: grid;
   gap: 10px;
@@ -198,6 +210,45 @@ nav button,
 .frets span {
   background: rgba(68, 39, 22, 0.55);
   height: 4px;
+}
+
+.howItWorks {
+  padding-top: 0;
+}
+
+.stepsGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stepCard {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(37, 48, 46, 0.12);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  padding: 18px;
+}
+
+.stepCard span {
+  align-items: center;
+  background: #126b61;
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 32px;
+  font-weight: 900;
+  height: 32px;
+  justify-content: center;
+}
+
+.stepCard p {
+  color: #33413e;
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 4px 0 0;
 }
 
 .sectionTitle h2 {
@@ -300,6 +351,12 @@ textarea {
   justify-content: space-between;
 }
 
+.breakdown .totalScore {
+  border-top: 1px solid rgba(37, 48, 46, 0.14);
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
 .breakdown span {
   color: #43524f;
 }
@@ -311,6 +368,7 @@ textarea {
 
 .challengeCard h3 {
   font-size: 1.35rem;
+  line-height: 1.25;
   margin: 0;
 }
 
@@ -364,7 +422,8 @@ summary {
   background: transparent;
   color: #126b61;
   font-weight: 850;
-  padding: 0;
+  padding: 4px 0;
+  text-align: left;
 }
 
 .detailsGrid {
@@ -426,7 +485,8 @@ summary {
   }
 
   nav,
-  .featureGrid {
+  .featureGrid,
+  .stepsGrid {
     grid-template-columns: 1fr;
   }
 
